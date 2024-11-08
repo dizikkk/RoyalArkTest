@@ -2,14 +2,14 @@
 using Cysharp.Threading.Tasks;
 using RoyalArkTest.Recycle.Configs;
 using RoyalArkTest.Resource;
-using RoyalArkTest.Rewind.Interfaces;
+using RoyalArkTest.TimeSkip.Interfaces;
 using RoyalArkTest.Utils.ObservableQueue;
 using UnityEngine;
 using Zenject;
 
 namespace RoyalArkTest.Recycle
 {
-    public class Recycler : MonoBehaviour, IRecycler, IDurationChangeable
+    public class Recycler : MonoBehaviour, IRecycler, ITimeSkippable
     {
         [SerializeField] 
         private RecyclerConfig config;
@@ -55,15 +55,6 @@ namespace RoyalArkTest.Recycle
 
         private ConvertResourcesReceipt GetReceipt(ResourceType inputResourceType) => 
             config.convertResourcesReceipts.FirstOrDefault(x => x.inputResourceType == inputResourceType);
-
-        public void ChangeDuration(float multiplier) => recycleDuration /= multiplier;
-
-        public void ResetDuration()
-        {
-            if (recyclableResources.Count <= 0) return;
-            ConvertResourcesReceipt receipt = GetReceipt(recyclableResources.Peek().GetResourceType());
-            recycleDuration = receipt.recycleDuration;
-        }
         
         private async UniTask WaitRecycleProcess()
         {
@@ -73,8 +64,12 @@ namespace RoyalArkTest.Recycle
             {
                 await UniTask.Yield(PlayerLoopTiming.Update);
                 elapsedTime += Time.deltaTime;
-                Debug.Log($"Прошло времени: {elapsedTime} из {recycleDuration}");
             }
+        }
+
+        public void SkipTime(float seconds)
+        {
+            
         }
     }
 }

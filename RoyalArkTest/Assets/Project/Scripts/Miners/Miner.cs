@@ -4,13 +4,13 @@ using RoyalArkTest.Miners.Configs;
 using RoyalArkTest.Miners.Interfaces;
 using RoyalArkTest.Recycle;
 using RoyalArkTest.Resource;
-using RoyalArkTest.Rewind.Interfaces;
 using RoyalArkTest.Shaft.Interfaces;
+using RoyalArkTest.TimeSkip.Interfaces;
 using UnityEngine;
 
 namespace RoyalArkTest.Miners
 {
-    public class Miner : MonoBehaviour, IMiner, IDurationChangeable
+    public class Miner : MonoBehaviour, IMiner, ITimeSkippable
     {
         [SerializeField] 
         private MinerConfig config;
@@ -63,19 +63,10 @@ namespace RoyalArkTest.Miners
             tween = gameObject.transform.DOMove(movePoint.position, distance / speed).SetEase(Ease.Linear);
             return tween;
         }
-
-        public void ChangeDuration(float multiplier)
+        
+        public void SkipTime(float seconds)
         {
-            speed *= multiplier;
-            ChangeEndValueTweener(multiplier);
+            tween.Goto(tween.Elapsed() + seconds, true);
         }
-
-        public void ResetDuration()
-        {
-            speed = config.speed;
-            ChangeEndValueTweener(1f);
-        }
-
-        private void ChangeEndValueTweener(float multiplier) => tween.timeScale = multiplier;
     }
 }
