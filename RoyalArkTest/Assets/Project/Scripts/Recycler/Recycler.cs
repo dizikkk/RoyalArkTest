@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using RoyalArkTest.Recycle.Configs;
 using RoyalArkTest.Resource;
@@ -16,7 +17,8 @@ namespace RoyalArkTest.Recycle
         
         public Transform Transform => transform;
 
-        private float recycleDuration;
+        private float skipTime;
+        
         private ObservableQueue<IResource> recyclableResources;
         private IResourceFactory resourceFactory;
         private IPlayerService playerService;
@@ -42,8 +44,7 @@ namespace RoyalArkTest.Recycle
             
             process = true;
             ConvertResourcesReceipt receipt = GetReceipt(recyclableResources.Peek().GetResourceType());
-            recycleDuration = receipt.recycleDuration;
-            await WaitRecycleProcess();
+            await WaitRecycleProcess(receipt.recycleDuration);
             IResource newResource = resourceFactory.Create(receipt.outputResourceType);
             recyclableResources.Dequeue();
             process = false;
@@ -56,20 +57,28 @@ namespace RoyalArkTest.Recycle
         private ConvertResourcesReceipt GetReceipt(ResourceType inputResourceType) => 
             config.convertResourcesReceipts.FirstOrDefault(x => x.inputResourceType == inputResourceType);
         
-        private async UniTask WaitRecycleProcess()
+        private async UniTask WaitRecycleProcess(float recycleDuration)
         {
             float elapsedTime = 0f;
 
-            while (elapsedTime < recycleDuration)
+            while (elapsedTime < recycleDuration - skipTime)
             {
                 await UniTask.Yield(PlayerLoopTiming.Update);
+                
                 elapsedTime += Time.deltaTime;
+                Debug.Log($"Прошло времени: {elapsedTime} из {recycleDuration}");
             }
+            
+            if (skipTime > 0) Math.Min(0f, skipTime -= recycleDuration);
+            else ResetSkipTime();
         }
 
         public void SkipTime(float seconds)
         {
-            
+            ResetSkipTime();
+            skipTime = seconds;
         }
+
+        private void ResetSkipTime() => skipTime = 0f;
     }
 }

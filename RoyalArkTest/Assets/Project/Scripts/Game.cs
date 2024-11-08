@@ -5,6 +5,9 @@ namespace RoyalArkTest
 {
     public class Game : MonoBehaviour
     {
+        [SerializeField]
+        private float timeToSkip;
+        
         private IGameFactory gameFactory;
         private ISkipTimeService skipTimeService;
         
@@ -22,7 +25,7 @@ namespace RoyalArkTest
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Space)) skipTimeService.SkipTime(.5f);
+            if (Input.GetKeyDown(KeyCode.Space)) skipTimeService.SkipTime(timeToSkip);
         }
     }
 }
